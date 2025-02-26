@@ -66,8 +66,8 @@ public class GoapWorldState : IAStarNode<GoapWorldState>, IComparable<GoapWorldS
         int differenceBits = thisHash ^ otherHash;
         int stateDifference = Enum.GetValues(typeof(StateKey)).Cast<StateKey>().Count(key => (differenceBits & (int)key) != 0);
 
-        // 启发式函数 = 状态差异 * 自身代价
-        return stateDifference * SelfCost;
+        // 启发式函数 = 状态差异
+        return stateDifference;
     }
 
     /// <summary>
@@ -91,10 +91,12 @@ public class GoapWorldState : IAStarNode<GoapWorldState>, IComparable<GoapWorldS
 
     public int CompareTo(GoapWorldState other)
     {
-        var res = (int)(FCost - other.FCost);
-        if(res == 0)
-            res = (int)(HCost - other.HCost);
-        return res;
+        // 首先比较总代价 F(n)
+        int result = FCost.CompareTo(other.FCost);
+        // 如果总代价相同，则比较启发式代价 H(n)
+        if (result == 0)
+            result = HCost.CompareTo(other.HCost);
+        return result;
     }
 
     public bool Equals(GoapWorldState other)
