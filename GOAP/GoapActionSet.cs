@@ -48,7 +48,7 @@ public class GoapActionSet
         actionGraph.AddNode(effectState);
         actionGraph.AddEdge(preconditionState, effectState, actionName);
 
-        // 添加邻居状态和连接代价（action的权重）
+        // 添加邻居状态和连接代价（GoapAction的权重）
         if (preconditionState.Neighbors != null)
         {
             if (preconditionState.Neighbors.ContainsKey(effectState)) {

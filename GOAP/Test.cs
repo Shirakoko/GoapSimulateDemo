@@ -24,13 +24,13 @@ public class Test : MonoBehaviour
                 .SetPrecondition(StateKey.HasLeg, true)
                 .SetEffect(StateKey.IsWalking, true))
 
-        .AddAction("想飞", new GoapAction()
-                .SetPrecondition(StateKey.IsWalking, true)
-                .SetEffect(StateKey.CanFly, true))
-
-        .AddAction("选目标", new GoapAction(0.9f)
+        .AddAction("选目标", new GoapAction()
                 .SetPrecondition(StateKey.IsWalking, true)
                 .SetEffect(StateKey.HasTarget, true))
+
+        .AddAction("想飞", new GoapAction(0.3f)
+                .SetPrecondition(StateKey.IsWalking, true)
+                .SetEffect(StateKey.CanFly, true))
 
         .AddAction("飞近", new GoapAction()
                 .SetPrecondition(StateKey.CanFly, true)
