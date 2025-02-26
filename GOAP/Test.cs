@@ -28,7 +28,7 @@ public class Test : MonoBehaviour
                 .SetPrecondition(StateKey.IsWalking, true)
                 .SetEffect(StateKey.HasTarget, true))
 
-        .AddAction("想飞", new GoapAction()
+        .AddAction("想飞", new GoapAction(0.3f)
                 .SetPrecondition(StateKey.IsWalking, true)
                 .SetEffect(StateKey.CanFly, true))
 
