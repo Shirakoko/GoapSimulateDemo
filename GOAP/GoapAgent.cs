@@ -68,8 +68,6 @@ public class GoapAgent
                 _actionPlan.Enqueue(_actionSet.GetTransAction(cur, _statePath.Peek()));
                 cur = _statePath.Pop();
             }
-
-            Debug.Log($"{_actionPlan.Count}");
         }
         else if (curState == EStatus.Success) // 执行结果为「成功」，表示动作顺利执行完
         {
