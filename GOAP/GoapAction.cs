@@ -24,8 +24,7 @@ public class GoapAction
     {
         foreach (var kvp in Precondition)
         {
-            var value = worldState.GetState(kvp.Key);
-            if (value == null || !value.Equals(kvp.Value))
+            if (!worldState.TryGetState(kvp.Key, out var value) || value != kvp.Value)
                 return false;
         }
         return true;

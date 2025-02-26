@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 public class GoapWorldState : IAStarNode<GoapWorldState>, IComparable<GoapWorldState>, IEquatable<GoapWorldState>
 {
@@ -46,9 +45,9 @@ public class GoapWorldState : IAStarNode<GoapWorldState>, IComparable<GoapWorldS
     /// <summary>
     /// 获取状态值
     /// </summary>
-    public object GetState(StateKey key)
+    public bool TryGetState(StateKey key, out bool value)
     {
-        return State.ContainsKey(key) ? State[key] : null;
+        return State.TryGetValue(key, out value);
     }
 
     /// <summary>
