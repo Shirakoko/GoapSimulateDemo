@@ -1,13 +1,23 @@
 using System;
 using System.Collections.Generic;
 using JufGame.Collections.Generic;
+using JufGame;
+using UnityEngine;
+
+namespace JufGame
+{
+    public interface IGetDestination<T>
+    {
+        bool GetDestination(T destination);
+    }
+}
 
 /// <summary>
 /// A星搜索器，T_Node额外实现IComparable用于优先队列的比较，实现IEquatable用于HashSet和Dictionary等同一性的判断
 /// </summary>
 /// <typeparam name="T_Map">搜索的图类</typeparam>
 /// <typeparam name="T_Node">搜索的节点类</typeparam>
-public class AStarSearcher<T_Map, T_Node> where T_Node: IAStarNode<T_Node>, IComparable<T_Node>, IEquatable<T_Node>
+public class AStarSearcher<T_Map, T_Node> where T_Node: IAStarNode<T_Node>, IComparable<T_Node>, IEquatable<T_Node>, IGetDestination<T_Node>
 {   
     // 探索集，是一个哈希集合
     private readonly HashSet<T_Node> closeList;
@@ -44,7 +54,7 @@ public class AStarSearcher<T_Map, T_Node> where T_Node: IAStarNode<T_Node>, ICom
             // 拟定移动到该节点，将其放入探索集
             closeList.Add(currentNode);
             // 如果找到了或图都搜完了也没找到时
-            if (currentNode.Equals(target) || openList.IsFull)
+            if (currentNode.GetDestination(target) || openList.IsFull)
             {
                 // 生成路径并保存到pathRes中
                 GenerateFinalPath(start, currentNode, pathRes);

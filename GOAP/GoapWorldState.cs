@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JufGame;
 
-public class GoapWorldState : IAStarNode<GoapWorldState>, IComparable<GoapWorldState>, IEquatable<GoapWorldState>
+public class GoapWorldState : IAStarNode<GoapWorldState>, IComparable<GoapWorldState>, IEquatable<GoapWorldState>, IGetDestination<GoapWorldState>
 {
     // 存储状态
     public Dictionary<StateKey, bool> State { get; private set; } 
@@ -106,6 +107,19 @@ public class GoapWorldState : IAStarNode<GoapWorldState>, IComparable<GoapWorldS
         if (result == 0)
             result = HCost.CompareTo(other.HCost);
         return result;
+    }
+
+    public bool GetDestination(GoapWorldState other)
+    {
+        if (other == null)
+        return false;
+
+        // 计算哈希值
+        int thisHash = GoapStatePool.CalculateHash(this.State);
+        int otherHash = GoapStatePool.CalculateHash(other.State);
+
+        // 判断 otherHash 是否满足 thisHash 的要求
+        return (thisHash & otherHash) == thisHash;
     }
 
     public bool Equals(GoapWorldState other)
