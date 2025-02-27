@@ -1,10 +1,14 @@
+using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GoapAction
 {
-    public Dictionary<StateKey, bool> Precondition { get; private set; } // 前提条件
-    public Dictionary<StateKey, bool> Effect { get; private set; } // 效果
+    public Dictionary<StateKey, Func<object, object>> Effect { get; private set; } // 效果函数
+
+    public Dictionary<StateKey, bool> PrecondState { get; private set; }
+    public Dictionary<StateKey, bool> EffectState { get; private set; }
 
     /// <summary>
     /// 动作代价，值必须在(0,1]范围内
@@ -12,19 +16,20 @@ public class GoapAction
     public float Cost { get; private set; }
     public GoapAction(float cost = 1.0f)
     {
-        Precondition = new Dictionary<StateKey, bool>();
-        Effect = new Dictionary<StateKey, bool>();
+        Effect = new Dictionary<StateKey, Func<object, object>>();
+        PrecondState = new Dictionary<StateKey, bool>();
+        EffectState = new Dictionary<StateKey, bool>();
         Cost = cost;
     }
 
     /// <summary>
     /// 判断是否满足前提条件
     /// </summary>
-    public bool MetCondition(GoapWorldState worldState)
+    public bool MetCondition(Dictionary<StateKey, bool> worldState)
     {
-        foreach (var kvp in Precondition)
+        foreach (var kvp in PrecondState)
         {
-            if (!worldState.TryGetState(kvp.Key, out var value) || value != kvp.Value)
+            if (!worldState.TryGetValue(kvp.Key, out var value) || value != kvp.Value)
                 return false;
         }
         return true;
@@ -33,30 +38,37 @@ public class GoapAction
     /// <summary>
     /// 应用动作效果到世界状态
     /// </summary>
-    public void Effect_OnRun(GoapWorldState worldState)
+    public void EffectOnRun(Dictionary<StateKey, object> worldState)
     {
         Debug.Log($"应用效果到世界状态，代价为{Cost}");
         foreach (var kvp in Effect)
         {
-            worldState.SetState(kvp.Key, kvp.Value);
+            // 获取当前状态值
+            if (worldState.TryGetValue(kvp.Key, out var currentValue))
+            {
+                // 调用委托函数，传入当前值并获取修改后的值
+                var newValue = kvp.Value(currentValue);
+                worldState[kvp.Key] = newValue;
+            }
         }
     }
 
     /// <summary>
     /// 设置前提条件
     /// </summary>
-    public GoapAction SetPrecondition(StateKey key, bool value)
+    public GoapAction SetPrecond(StateKey key, bool preCondValue)
     {
-        Precondition[key] = value;
+        PrecondState[key] = preCondValue;
         return this;
     }
 
     /// <summary>
     /// 设置效果
     /// </summary>
-    public GoapAction SetEffect(StateKey key, bool value)
+    public GoapAction SetEffect(StateKey key, bool effectValue, Func<object, object> effectFunc)
     {
-        Effect[key] = value;
+        Effect[key] = effectFunc;
+        EffectState[key] = effectValue;
         return this;
     }
 }

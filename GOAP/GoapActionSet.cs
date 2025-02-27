@@ -41,8 +41,8 @@ public class GoapActionSet
         actionSet.Add(actionName, newAction);
 
         // 使用状态池获取或创建状态
-        var preconditionState = GoapStatePool.Instance.GetOrCreateState(newAction.Precondition);
-        var effectState = GoapStatePool.Instance.GetOrCreateState(newAction.Effect);
+        var preconditionState = GoapStatePool.Instance.GetOrCreateState(newAction.PrecondState);
+        var effectState = GoapStatePool.Instance.GetOrCreateState(newAction.EffectState);
 
         actionGraph.AddNode(preconditionState);
         actionGraph.AddNode(effectState);

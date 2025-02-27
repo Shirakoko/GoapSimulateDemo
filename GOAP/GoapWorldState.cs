@@ -4,7 +4,11 @@ using System.Linq;
 
 public class GoapWorldState : IAStarNode<GoapWorldState>, IComparable<GoapWorldState>, IEquatable<GoapWorldState>
 {
-    public Dictionary<StateKey, bool> State { get; private set; } // 存储状态
+    // 存储状态
+    public Dictionary<StateKey, bool> State { get; private set; } 
+
+    // 全局比较函数字典，用于将值类型转换为 bool
+    public static readonly Dictionary<StateKey, Func<object, bool>> _stateComparers = new Dictionary<StateKey, Func<object, bool>>();
     public GoapWorldState Parent { get; set; }
     public float SelfCost { get; set; }
     public float GCost { get; set; }
@@ -26,6 +30,12 @@ public class GoapWorldState : IAStarNode<GoapWorldState>, IComparable<GoapWorldS
     {
         Neighbors = new Dictionary<GoapWorldState, float>();
         State = new Dictionary<StateKey, bool>(other.State); // 深拷贝状态
+    }
+
+    public GoapWorldState(Dictionary<StateKey, object> other)
+    {
+        Neighbors = new Dictionary<GoapWorldState, float>();
+        State = GoapWorldState.ConvertStateData(other);
     }
 
     /// <summary>
@@ -108,5 +118,35 @@ public class GoapWorldState : IAStarNode<GoapWorldState>, IComparable<GoapWorldS
         int otherHash = GoapStatePool.CalculateHash(other.State);
 
         return thisHash == otherHash;
+    }
+
+    /// <summary>
+    /// 把值类型的状态转换成bool类型
+    /// </summary>
+    /// <param name="stateData">值类型的状态</param>
+    /// <returns>布尔类型的状态</returns>
+    public static Dictionary<StateKey, bool> ConvertStateData(Dictionary<StateKey, object> stateData)
+    {
+        var result = new Dictionary<StateKey, bool>();
+        foreach (var kvp in stateData)
+        {
+            // 如果值类型已经是 bool 类型，直接放入结果字典
+            if (kvp.Value is bool boolValue)
+            {
+                result.Add(kvp.Key, boolValue);
+            }
+            // 如果比较函数字典中有该键对应的比较函数
+            else if (GoapWorldState._stateComparers.TryGetValue(kvp.Key, out var comparer))
+            {
+                // 调用比较函数，将值转换为布尔类型
+                result.Add(kvp.Key, comparer(kvp.Value));
+            }
+            else
+            {
+                // 默认值为 false
+                result.Add(kvp.Key, false);
+            }
+        }
+        return result;
     }
 }

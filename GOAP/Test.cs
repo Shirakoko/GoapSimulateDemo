@@ -1,10 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public class Test : MonoBehaviour
 {
     private GoapActionSet actionSet;
-    private GoapWorldState worldState;
+    private Dictionary<StateKey, object> stateData;
     private GoapWorldState goal;
     private GoapAgent agent;
 
@@ -16,32 +19,40 @@ public class Test : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        worldState = new GoapWorldState();
-        worldState.SetState(StateKey.HasLeg, true);
+        // 枚举StateKey中的每个键都要覆盖到
+        stateData = new Dictionary<StateKey, object>()
+        {
+                { StateKey.HasLeg, true },
+                { StateKey.IsWalking, false},
+                { StateKey.HasTarget, false},
+                { StateKey.CanFly, false},
+                { StateKey.IsNearby, false},
+        };
 
         actionSet = new GoapActionSet()
         .AddAction("走", new GoapAction()
-                .SetPrecondition(StateKey.HasLeg, true)
-                .SetEffect(StateKey.IsWalking, true))
+                .SetPrecond(StateKey.HasLeg, true)
+                .SetEffect(StateKey.IsWalking, true, (value) => {return true;}))
 
         .AddAction("选目标", new GoapAction()
-                .SetPrecondition(StateKey.IsWalking, true)
-                .SetEffect(StateKey.HasTarget, true))
+                .SetPrecond(StateKey.IsWalking, true)
+                .SetEffect(StateKey.HasTarget, true, (value) => {return true;}))
 
         .AddAction("想飞", new GoapAction(0.3f)
-                .SetPrecondition(StateKey.IsWalking, true)
-                .SetEffect(StateKey.CanFly, true))
+                .SetPrecond(StateKey.IsWalking, true)
+                .SetEffect(StateKey.CanFly, true, (value) => {return true;}))
 
         .AddAction("飞近", new GoapAction()
-                .SetPrecondition(StateKey.CanFly, true)
-                .SetEffect(StateKey.IsNearby, true))
+                .SetPrecond(StateKey.CanFly, true)
+                .SetEffect(StateKey.IsNearby, true, (value) => {return true;}))
 
         .AddAction("靠近", new GoapAction()
-                .SetPrecondition(StateKey.HasTarget, true)
-                .SetEffect(StateKey.IsNearby, true));
+                .SetPrecond(StateKey.HasTarget, true)
+                .SetEffect(StateKey.IsNearby, true, (value) => {return true;}));
         
-        agent = new GoapAgent(worldState, actionSet);
         
+        
+        agent = new GoapAgent(stateData, actionSet);
         agent.SetActionFunc("走", () => { Debug.Log(" 走"); return EStatus.Success; });
         agent.SetActionFunc("想飞", () => { Debug.Log(" 想飞"); return EStatus.Success; });
         agent.SetActionFunc("选目标", () => { Debug.Log(" 选目标"); return EStatus.Success; });
@@ -56,6 +67,6 @@ public class Test : MonoBehaviour
 
     private void RunPlan()
     {
-        agent.RunPlan(worldState, goal);
+        agent.RunPlan(new GoapWorldState(stateData), goal);
     }
 }

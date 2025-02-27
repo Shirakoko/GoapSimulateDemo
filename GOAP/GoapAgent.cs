@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 /// <summary>
@@ -13,7 +12,7 @@ public enum EStatus
 
 public class GoapAgent
 {
-    private readonly GoapWorldState _curWorldState; // 当前世界状态
+    private readonly Dictionary<StateKey, object> _curWorldState; // 当前世界状态
     private readonly GoapActionSet _actionSet; // 动作集
     private readonly AStarSearcher<GoapActionSet, GoapWorldState> goapAStar; // A* 搜索器
     private readonly Dictionary<string, Func<EStatus>> _actionFuncs; // 动作名称对应的动作函数
@@ -25,7 +24,7 @@ public class GoapAgent
     private GoapAction curAction; // 当前执行的动作
     private Func<EStatus> curActionFunc; // 当前运行的动作函数
 
-    public GoapAgent(GoapWorldState worldState, GoapActionSet actionSet)
+    public GoapAgent(Dictionary<StateKey, object> worldState, GoapActionSet actionSet)
     {
         this._curWorldState = worldState;
         this._actionSet = actionSet;
@@ -71,11 +70,11 @@ public class GoapAgent
         }
         else if (curState == EStatus.Success) // 执行结果为「成功」，表示动作顺利执行完
         {
-            curAction.Effect_OnRun(sharedCurWorldState); // 动作对全局世界状态造成影响
-            foreach (var kvp in sharedCurWorldState.State)
-            {
-                this._curWorldState.SetState(kvp.Key, kvp.Value);
-            }
+            curAction.EffectOnRun(_curWorldState); // 动作对全局世界状态造成影响
+            // foreach (var kvp in sharedCurWorldState.State)
+            // {
+            //     this._curWorldState.SetState(kvp.Key, kvp.Value);
+            // }
         }
 
         // 如果执行结果不是「运行中」，表示上个动作要么成功，要么失败；都该取出动作序列中新的动作来执行
@@ -89,7 +88,7 @@ public class GoapAgent
             }
         }
 
-        if(canContinue && curAction.MetCondition(this._curWorldState)) {
+        if(canContinue && curAction.MetCondition(GoapWorldState.ConvertStateData(this._curWorldState))) {
             curState = curActionFunc();
         } else {
             curState = EStatus.Failure;
