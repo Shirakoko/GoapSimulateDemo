@@ -25,11 +25,12 @@ public class GoapAction
     /// <summary>
     /// 判断是否满足前提条件
     /// </summary>
-    public bool MetCondition(Dictionary<StateKey, bool> worldState)
+    public bool MetCondition(Dictionary<StateKey, object> worldState)
     {
+        var boolWorldState = GoapWorldState.ConvertStateData(worldState);
         foreach (var kvp in PrecondState)
         {
-            if (!worldState.TryGetValue(kvp.Key, out var value) || value != kvp.Value)
+            if (!boolWorldState.TryGetValue(kvp.Key, out var value) || value != kvp.Value)
                 return false;
         }
         return true;

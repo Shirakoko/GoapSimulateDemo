@@ -88,7 +88,7 @@ public class GoapAgent
             }
         }
 
-        if(canContinue && curAction.MetCondition(GoapWorldState.ConvertStateData(this._curWorldState))) {
+        if(canContinue && curAction.MetCondition(this._curWorldState)) {
             curState = curActionFunc();
         } else {
             Debug.Log("动作条件不满足，计划失败");
