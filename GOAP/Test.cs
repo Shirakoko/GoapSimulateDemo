@@ -11,12 +11,6 @@ public class Test : MonoBehaviour
     private GoapWorldState goal;
     private GoapAgent agent;
 
-    void Awake()
-    {
-
-    }
-
-    // Start is called before the first frame update
     void Start()
     {
         // 枚举StateKey中的每个键都要覆盖到
@@ -25,10 +19,19 @@ public class Test : MonoBehaviour
                 { StateKey.HasLeg, true },
                 { StateKey.IsWalking, false},
                 { StateKey.HasTarget, false},
-                { StateKey.CanFly, false},
-                { StateKey.IsNearby, false},
+                { StateKey.CanFly, "不能飞行"},
+                { StateKey.IsNearby, 50},
         };
 
+        // 设置值类型状态的比较函数
+        GoapWorldState._stateComparers.Add(StateKey.CanFly, (value) => {
+                return (string)value == "可以飞行";
+        });
+        GoapWorldState._stateComparers.Add(StateKey.IsNearby, (value) => {
+                return (int)value < 10;
+        });
+
+        // 构建GOAP图，动作代价必须在(0,1]范围内
         actionSet = new GoapActionSet()
         .AddAction("走", new GoapAction()
                 .SetPrecond(StateKey.HasLeg, true)
@@ -40,16 +43,15 @@ public class Test : MonoBehaviour
 
         .AddAction("想飞", new GoapAction(0.3f)
                 .SetPrecond(StateKey.IsWalking, true)
-                .SetEffect(StateKey.CanFly, true, (value) => {return true;}))
+                .SetEffect(StateKey.CanFly, true, (value) => {return "可以飞行";}))
 
         .AddAction("飞近", new GoapAction()
                 .SetPrecond(StateKey.CanFly, true)
-                .SetEffect(StateKey.IsNearby, true, (value) => {return true;}))
+                .SetEffect(StateKey.IsNearby, true, (value) => {return (int)value - 45;}))
 
         .AddAction("靠近", new GoapAction()
                 .SetPrecond(StateKey.HasTarget, true)
-                .SetEffect(StateKey.IsNearby, true, (value) => {return true;}));
-        
+                .SetEffect(StateKey.IsNearby, true, (value) => {return (int)value - 45;}));
         
         
         agent = new GoapAgent(stateData, actionSet);
